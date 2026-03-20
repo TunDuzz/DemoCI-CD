@@ -1,0 +1,36 @@
+/* Swiper Pagination Styles for Hero Section */
+.hero-swiper {
+    position: relative;
+    z-index: 10;
+}
+
+.hero-swiper .swiper-slide {
+    isolation: isolate;
+    /* Prevents blending contexts from bleeding across slides */
+    overflow: hidden;
+}
+
+.hero-swiper .swiper-pagination {
+    bottom: 40px !important;
+    right: 40px !important;
+    left: auto !important;
+    width: auto !important;
+    z-index: 50;
+    display: flex;
+    gap: 12px;
+}
+
+.hero-swiper .hero-pagination-bullet {
+    width: 60px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+}
+
+.hero-swiper .hero-pagination-bullet.swiper-pagination-bullet-active {
+    background: var(--color-primary-yellow);
+    box-shadow: 0 0 10px rgba(252, 213, 63, 0.5);
+}

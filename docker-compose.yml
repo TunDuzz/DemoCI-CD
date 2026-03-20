@@ -1,0 +1,70 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: tuanvu2304/cinestream-backend:latest
+    container_name: cinestream-backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+      - ASPNETCORE_URLS=http://+:${BACKEND_PORT:-8080}
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING}
+      - JwtSettings__Secret=${JWT_SECRET}
+      - JwtSettings__Issuer=${JWT_ISSUER}
+      - JwtSettings__Audience=${JWT_AUDIENCE}
+      - JwtSettings__ExpiryDays=${JWT_EXPIRY_DAYS}
+      - Cloudinary__CloudName=${CLOUDINARY_CLOUD_NAME}
+      - Cloudinary__ApiKey=${CLOUDINARY_API_KEY}
+      - Cloudinary__ApiSecret=${CLOUDINARY_API_SECRET}
+      - MovieApi__BaseUrl=${MOVIE_API_BASE_URL}
+      - MovieApi__ImageBaseUrl=${MOVIE_API_IMAGE_BASE_URL}
+      - TmdbApi__ApiKey=${TMDB_API_KEY}
+      - TmdbApi__BaseUrl=${TMDB_BASE_URL}
+      - TmdbApi__ImageBaseUrl=${TMDB_IMAGE_BASE_URL}
+    expose:
+      - "${BACKEND_PORT:-8080}"
+    networks:
+      - ${NETWORK_NAME:-cinestream-network}
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: tuanvu2304/cinestream-frontend:latest
+    container_name: cinestream-frontend
+    volumes:
+      - frontend-dist:/usr/share/nginx/html
+    networks:
+      - ${NETWORK_NAME:-cinestream-network}
+
+  nginx:
+    image: nginx:alpine
+    container_name: cinestream_nginx
+    ports:
+      - "${NGINX_HTTP_PORT:-8081}:80"
+    volumes:
+      - frontend-dist:/usr/share/nginx/html
+      - ./nginx/conf:/etc/nginx/conf.d
+    depends_on:
+      - backend
+    networks:
+      - ${NETWORK_NAME:-cinestream-network}
+  # certbot:
+  #   image: certbot/certbot
+  #   container_name: cinestream_certbot
+  #   volumes:
+  #     - ./nginx/certbot/conf:/etc/letsencrypt
+  #     - ./nginx/certbot/www:/var/www/certbot
+  #   entrypoint: "/bin/sh -c 'trap exit TERM; while :; do sleep 12h & wait $${!}; certbot renew; done;'"
+  #   networks:
+  #     - ${NETWORK_NAME:-cinestream-network}
+
+volumes:
+  frontend-dist:
+
+
+networks:
+  cinestream-network:
+    # Default defined here but mapping below explicitly
+    name: ${NETWORK_NAME:-cinestream-network}
+    driver: bridge
