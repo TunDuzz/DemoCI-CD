@@ -1,8 +1,8 @@
-name: Build and Push Docker Image
+name: Build and Push Docker Images
 
 on:
   push:
-    branches: [ "main" ] # Chạy khi bạn push code lên nhánh main
+    branches: [ "main" ]
 
 jobs:
   build-and-push:
@@ -18,10 +18,20 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker image
+      # 🔥 Build Backend
+      - name: Build and push backend
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./backend
+          file: ./backend/Dockerfile
           push: true
-          # Thay 'demo-app' bằng tên repository bạn muốn đặt trên Docker Hub
-          tags: tuanvu2304/demo-app:latest
+          tags: tuanvu2304/cinestream-backend:latest
+
+      # 🔥 Build Frontend
+      - name: Build and push frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: tuanvu2304/cinestream-frontend:latest
