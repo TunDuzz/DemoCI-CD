@@ -3,65 +3,516 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo App</title>
+    <title>CYBER BLAST - Block Puzzle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg: #0b0e14;
+            --card-bg: rgba(20, 25, 35, 0.8);
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-purple: #9d00ff;
+            --neon-green: #39ff14;
+            --neon-yellow: #f8ff00;
+            --grid-size: 8;
+            --cell-size: 45px;
+            --gap: 4px;
+        }
+
+        @media (max-width: 500px) {
+            :root { --cell-size: 38px; }
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(157, 0, 255, 0.1) 0%, transparent 50%),
+                linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
             color: white;
             height: 100vh;
-            margin: 0;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            touch-action: none;
         }
-        .card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 3rem;
-            border-radius: 24px;
+
+        /* UI Headers */
+        .game-header {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            margin-bottom: 10px;
+            z-index: 10;
+        }
+
+        .score-box {
             text-align: center;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.8s ease-out;
+            background: var(--card-bg);
+            padding: 8px 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
         }
-        h1 {
-            font-size: 3.5rem;
-            margin: 0;
-            background: linear-gradient(to right, #38bdf8, #818cf8);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 800;
+
+        .score-label { font-size: 12px; text-transform: uppercase; color: var(--neon-blue); letter-spacing: 1px; }
+        .score-value { font-size: 24px; font-weight: 900; }
+
+        /* Game Board */
+        .board-container {
+            position: relative;
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(157, 0, 255, 0.1);
+            backdrop-filter: blur(10px);
         }
-        p {
-            color: #94a3b8;
-            font-size: 1.25rem;
-            margin-top: 1rem;
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-size), var(--cell-size));
+            grid-template-rows: repeat(var(--grid-size), var(--cell-size));
+            gap: var(--gap);
         }
-        .badge {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background: rgba(56, 189, 248, 0.1);
-            color: #38bdf8;
-            border-radius: 9999px;
-            font-weight: 600;
-            font-size: 0.875rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid rgba(56, 189, 248, 0.2);
+
+        .cell {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        .cell.occupied { border: none; }
+        .cell.preview { background: rgba(255, 255, 255, 0.1) !important; }
+
+        /* Shapes Dock */
+        .dock {
+            margin-top: 30px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            min-height: 120px;
+        }
+
+        .dock-slot {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .shape {
+            cursor: grab;
+            display: grid;
+            gap: 2px;
+            transition: transform 0.2s ease;
+        }
+
+        .shape-block {
+            width: 25px;
+            height: 25px;
+            border-radius: 4px;
+            box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Block Colors */
+        .color-blue { background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); }
+        .color-pink { background: var(--neon-pink); box-shadow: 0 0 10px var(--neon-pink); }
+        .color-purple { background: var(--neon-purple); box-shadow: 0 0 10px var(--neon-purple); }
+        .color-green { background: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
+        .color-yellow { background: var(--neon-yellow); box-shadow: 0 0 10px var(--neon-yellow); }
+
+        /* Overlay */
+        #overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            display: none;
+        }
+
+        #overlay h2 { font-size: 48px; color: var(--neon-pink); margin-bottom: 20px; text-shadow: 0 0 20px var(--neon-pink); }
+        
+        .btn {
+            padding: 12px 40px;
+            font-size: 20px;
+            font-weight: 700;
+            background: transparent;
+            color: white;
+            border: 2px solid var(--neon-blue);
+            cursor: pointer;
+            border-radius: 99px;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn:hover { background: var(--neon-blue); color: var(--bg); box-shadow: 0 0 30px var(--neon-blue); }
+
+        /* Animation */
+        @keyframes clearPop {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); filter: brightness(2); }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        .clear-anim { animation: clearPop 0.4s forwards; }
+
+        /* Drag Style */
+        .dragging {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+            transform: scale(1.2);
+            opacity: 0.9;
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <div class="badge">V1.0.0</div>
-        <h1>Deployment Success</h1>
-        <p>Your demo application is running on Nginx!</p>
+    <div class="game-header">
+        <div class="score-box">
+            <div class="score-label">Best</div>
+            <div id="best-score" class="score-value">0</div>
+        </div>
+        <div class="score-box">
+            <div class="score-label">Score</div>
+            <div id="current-score" class="score-value">0</div>
+        </div>
     </div>
+
+    <div class="board-container">
+        <div id="game-board"></div>
+    </div>
+
+    <div class="dock">
+        <div class="dock-slot" data-index="0"></div>
+        <div class="dock-slot" data-index="1"></div>
+        <div class="dock-slot" data-index="2"></div>
+    </div>
+
+    <div id="overlay">
+        <h2 id="overlay-title">GAME OVER</h2>
+        <button class="btn" onclick="game.init()">New Run</button>
+    </div>
+
+    <script>
+        // --- AUDIO ENGINE ---
+        class AudioEngine {
+            constructor() {
+                this.ctx = null;
+            }
+            ensureCtx() {
+                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            playClack() {
+                this.ensureCtx();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.1);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
+            }
+            playPop() {
+                this.ensureCtx();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.2);
+            }
+        }
+
+        const audio = new AudioEngine();
+
+        // --- SHAPES DATA ---
+        const SHAPES = [
+            { id: 1, layout: [[1]], color: 'color-blue' }, // 1x1
+            { id: 2, layout: [[1,1]], color: 'color-pink' }, // 1x2
+            { id: 3, layout: [[1],[1]], color: 'color-pink' },
+            { id: 4, layout: [[1,1,1]], color: 'color-purple' }, // 1x3
+            { id: 5, layout: [[1],[1],[1]], color: 'color-purple' },
+            { id: 6, layout: [[1,1],[1,1]], color: 'color-yellow' }, // Square
+            { id: 7, layout: [[1,1,1,1]], color: 'color-green' }, // Long
+            { id: 8, layout: [[1],[1],[1],[1]], color: 'color-green' },
+            { id: 9, layout: [[1,0],[1,1]], color: 'color-blue' }, // L small
+            { id: 10, layout: [[0,1,1],[1,1,0]], color: 'color-pink' }, // Z
+            { id: 11, layout: [[1,1,1],[0,1,0]], color: 'color-purple' }, // T
+            { id: 12, layout: [[1,1,1],[1,0,0]], color: 'color-blue' }, // L
+            { id: 13, layout: [[1,1,1],[0,0,1]], color: 'color-yellow' }, // J
+        ];
+
+        // --- GAME ENGINE ---
+        class BlockBlast {
+            constructor() {
+                this.grid = Array(8).fill(null).map(() => Array(8).fill(0));
+                this.score = 0;
+                this.bestScore = parseInt(localStorage.getItem('bestScore')) || 0;
+                this.dockedShapes = [null, null, null];
+                this.init();
+            }
+
+            init() {
+                this.grid = Array(8).fill(null).map(() => Array(8).fill(0));
+                this.score = 0;
+                this.updateScore(0);
+                document.getElementById('overlay').style.display = 'none';
+                this.renderBoard();
+                this.refillDock();
+                document.getElementById('best-score').innerText = this.bestScore;
+            }
+
+            renderBoard() {
+                const boardEl = document.getElementById('game-board');
+                boardEl.innerHTML = '';
+                for (let r = 0; r < 8; r++) {
+                    for (let c = 0; c < 8; c++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell' + (this.grid[r][c] ? ' occupied ' + this.grid[r][c] : '');
+                        cell.dataset.row = r;
+                        cell.dataset.col = c;
+                        boardEl.appendChild(cell);
+                    }
+                }
+            }
+
+            refillDock() {
+                if (this.dockedShapes.every(s => s === null)) {
+                    for (let i = 0; i < 3; i++) {
+                        const randomShape = {...SHAPES[Math.floor(Math.random() * SHAPES.length)]};
+                        this.dockedShapes[i] = randomShape;
+                        this.renderShapeInDock(i, randomShape);
+                    }
+                    this.checkEndGame();
+                }
+            }
+
+            renderShapeInDock(index, shape) {
+                const slot = document.querySelector(`.dock-slot[data-index="${index}"]`);
+                slot.innerHTML = '';
+                if (!shape) return;
+
+                const shapeEl = document.createElement('div');
+                shapeEl.className = 'shape';
+                shapeEl.style.gridTemplateColumns = `repeat(${shape.layout[0].length}, 25px)`;
+                
+                shape.layout.forEach((row, r) => {
+                    row.forEach((v, c) => {
+                        const block = document.createElement('div');
+                        if (v) {
+                            block.className = `shape-block ${shape.color}`;
+                        }
+                        shapeEl.appendChild(block);
+                    });
+                });
+
+                shapeEl.onpointerdown = (e) => this.handleDragStart(e, index, shape);
+                slot.appendChild(shapeEl);
+            }
+
+            handleDragStart(e, index, shape) {
+                audio.ensureCtx();
+                const shapeEl = e.currentTarget;
+                const rect = shapeEl.getBoundingClientRect();
+                const shiftX = e.clientX - rect.left;
+                const shiftY = e.clientY - rect.top;
+
+                const clone = shapeEl.cloneNode(true);
+                clone.classList.add('dragging');
+                clone.style.width = rect.width + 'px';
+                clone.style.height = rect.height + 'px';
+                clone.style.gridTemplateColumns = shapeEl.style.gridTemplateColumns;
+                document.body.appendChild(clone);
+
+                shapeEl.style.visibility = 'hidden';
+
+                const moveAt = (pageX, pageY) => {
+                    clone.style.left = pageX - shiftX + 'px';
+                    clone.style.top = pageY - shiftY + 'px';
+                    this.showPreview(pageX - shiftX + 20, pageY - shiftY + 20, shape);
+                };
+
+                const onPointerMove = (ev) => moveAt(ev.pageX, ev.pageY);
+                document.addEventListener('pointermove', onPointerMove);
+
+                clone.onpointerup = () => {
+                    document.removeEventListener('pointermove', onPointerMove);
+                    document.body.removeChild(clone);
+                    
+                    const dropTarget = this.getDropTarget(parseInt(clone.style.left) + 20, parseInt(clone.style.top) + 20);
+                    if (dropTarget && this.canPlace(dropTarget.r, dropTarget.c, shape)) {
+                        this.placeShape(dropTarget.r, dropTarget.c, shape, index);
+                        audio.playClack();
+                    } else {
+                        shapeEl.style.visibility = 'visible';
+                    }
+                    this.clearPreview();
+                    clone.onpointerup = null;
+                };
+            }
+
+            getDropTarget(x, y) {
+                const board = document.getElementById('game-board').getBoundingClientRect();
+                if (x < board.left || x > board.right || y < board.top || y > board.bottom) return null;
+                
+                const r = Math.floor((y - board.top) / (board.height / 8));
+                const c = Math.floor((x - board.left) / (board.width / 8));
+                return { r, c };
+            }
+
+            canPlace(row, col, shape) {
+                for (let r = 0; r < shape.layout.length; r++) {
+                    for (let c = 0; c < shape.layout[r].length; c++) {
+                        if (shape.layout[r][c]) {
+                            const targetR = row + r;
+                            const targetC = col + c;
+                            if (targetR >= 8 || targetC >= 8 || this.grid[targetR][targetC] !== 0) return false;
+                        }
+                    }
+                }
+                return true;
+            }
+
+            showPreview(x, y, shape) {
+                this.clearPreview();
+                const target = this.getDropTarget(x, y);
+                if (target && this.canPlace(target.r, target.c, shape)) {
+                    for (let r = 0; r < shape.layout.length; r++) {
+                        for (let c = 0; c < shape.layout[r].length; c++) {
+                            if (shape.layout[r][c]) {
+                                const cell = document.querySelector(`.cell[data-row="${target.r + r}"][data-col="${target.c + c}"]`);
+                                if (cell) cell.classList.add('preview');
+                            }
+                        }
+                    }
+                }
+            }
+
+            clearPreview() {
+                document.querySelectorAll('.cell.preview').forEach(c => c.classList.remove('preview'));
+            }
+
+            placeShape(row, col, shape, dockIndex) {
+                let blocksPlaced = 0;
+                for (let r = 0; r < shape.layout.length; r++) {
+                    for (let c = 0; c < shape.layout[r].length; c++) {
+                        if (shape.layout[r][c]) {
+                            this.grid[row + r][col + c] = shape.color;
+                            blocksPlaced++;
+                        }
+                    }
+                }
+                this.dockedShapes[dockIndex] = null;
+                this.updateScore(this.score + blocksPlaced);
+                this.renderBoard();
+                this.checkLines();
+                this.refillDock();
+                this.checkEndGame();
+            }
+
+            checkLines() {
+                const rowsToClear = [];
+                const colsToClear = [];
+
+                for (let i = 0; i < 8; i++) {
+                    if (this.grid[i].every(cell => cell !== 0)) rowsToClear.push(i);
+                    let columnFull = true;
+                    for (let j = 0; j < 8; j++) {
+                        if (this.grid[j][i] === 0) { columnFull = false; break; }
+                    }
+                    if (columnFull) colsToClear.push(i);
+                }
+
+                if (rowsToClear.length > 0 || colsToClear.length > 0) {
+                    audio.playPop();
+                    const totalLines = rowsToClear.length + colsToClear.length;
+                    this.updateScore(this.score + (totalLines * 10) + (totalLines > 1 ? totalLines * 5 : 0));
+
+                    rowsToClear.forEach(r => {
+                        for (let c = 0; c < 8; c++) this.animateClear(r, c);
+                    });
+                    colsToClear.forEach(c => {
+                        for (let r = 0; r < 8; r++) this.animateClear(r, c);
+                    });
+
+                    setTimeout(() => {
+                        rowsToClear.forEach(r => {
+                            for (let c = 0; c < 8; c++) this.grid[r][c] = 0;
+                        });
+                        colsToClear.forEach(c => {
+                            for (let r = 0; r < 8; r++) this.grid[r][c] = 0;
+                        });
+                        this.renderBoard();
+                        this.checkEndGame();
+                    }, 400);
+                }
+            }
+
+            animateClear(r, c) {
+                const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+                if (cell) cell.classList.add('clear-anim');
+            }
+
+            updateScore(newScore) {
+                this.score = newScore;
+                document.getElementById('current-score').innerText = this.score;
+                if (this.score > this.bestScore) {
+                    this.bestScore = this.score;
+                    document.getElementById('best-score').innerText = this.bestScore;
+                    localStorage.setItem('bestScore', this.bestScore);
+                }
+            }
+
+            checkEndGame() {
+                const hasMove = this.dockedShapes.some(shape => {
+                    if (!shape) return false;
+                    for (let r = 0; r < 8; r++) {
+                        for (let c = 0; c < 8; c++) {
+                            if (this.canPlace(r, c, shape)) return true;
+                        }
+                    }
+                    return false;
+                });
+
+                if (!hasMove && this.dockedShapes.some(s => s !== null)) {
+                    setTimeout(() => {
+                        document.getElementById('overlay-title').innerText = "GAME OVER";
+                        document.getElementById('overlay').style.display = 'flex';
+                    }, 600);
+                }
+            }
+        }
+
+        const game = new BlockBlast();
+    </script>
 </body>
 </html>
+
