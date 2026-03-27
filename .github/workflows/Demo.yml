@@ -25,6 +25,20 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/demo-app:latest
 
+      - name: Verify image is publicly accessible
+        run: |
+          IMAGE="${{ secrets.DOCKER_USERNAME }}/demo-app:latest"
+          echo "Checking public access for $IMAGE ..."
+          docker logout
+          if docker pull "$IMAGE" > /dev/null 2>&1; then
+            echo "✅ Image is publicly accessible"
+          else
+            echo "❌ Image is NOT public! Go to:"
+            echo "   https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/demo-app/settings"
+            echo "   → Change Visibility to PUBLIC"
+            exit 1
+          fi
+
       - name: Deploy to DevOps Classroom
         run: |
           set -euo pipefail
@@ -41,6 +55,7 @@ jobs:
           echo "  container_port=$CONTAINER_PORT"
 
           for i in $(seq 1 $MAX_RETRIES); do
+            echo ""
             echo "Attempt $i/$MAX_RETRIES..."
 
             RESPONSE=$(curl -m 1200 -sS -w "\n%{http_code}" -X POST "${{ secrets.DEPLOY_URL }}?repo=$REPO&tag=$TAG&slot=4&container_port=$CONTAINER_PORT&strict_container_port=0" || true)
@@ -55,8 +70,14 @@ jobs:
             echo "::endgroup::"
 
             if [ "$CODE" -ge 200 ] && [ "$CODE" -lt 300 ]; then
-              echo "Deploy success"
+              echo "✅ Deploy success on attempt $i!"
               exit 0
+            fi
+
+            if [ "$CODE" = "502" ]; then
+              echo "❌ 502: Slot cannot pull image. Is repo PUBLIC on Docker Hub?"
+            elif [ "$CODE" = "524" ]; then
+              echo "❌ 524: Timeout. Slot may still be starting, check manually."
             fi
 
             echo "Attempt $i failed (HTTP $CODE)"
@@ -66,5 +87,5 @@ jobs:
             fi
           done
 
-          echo "Deploy failed after $MAX_RETRIES attempts"
+          echo "❌ Deploy failed after $MAX_RETRIES attempts"
           exit 1
