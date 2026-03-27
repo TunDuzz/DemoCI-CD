@@ -3,516 +3,540 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CYBER BLAST - Block Puzzle</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>✨ 3D Snow Globe | Ultimate Christmas Edition</title>
     <style>
-        :root {
-            --bg: #0b0e14;
-            --card-bg: rgba(20, 25, 35, 0.8);
-            --neon-blue: #00f3ff;
-            --neon-pink: #ff00ff;
-            --neon-purple: #9d00ff;
-            --neon-green: #39ff14;
-            --neon-yellow: #f8ff00;
-            --grid-size: 8;
-            --cell-size: 45px;
-            --gap: 4px;
-        }
-
-        @media (max-width: 500px) {
-            :root { --cell-size: 38px; }
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-        body {
-            font-family: 'Outfit', sans-serif;
-            background-color: var(--bg);
-            background-image: 
-                radial-gradient(circle at 50% 50%, rgba(157, 0, 255, 0.1) 0%, transparent 50%),
-                linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
-            background-size: 100% 100%, 40px 40px, 40px 40px;
-            color: white;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            touch-action: none;
-        }
-
-        /* UI Headers */
-        .game-header {
-            width: 100%;
-            max-width: 400px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            margin-bottom: 10px;
-            z-index: 10;
-        }
-
-        .score-box {
-            text-align: center;
-            background: var(--card-bg);
-            padding: 8px 15px;
-            border-radius: 12px;
-            border: 1px solid rgba(0, 243, 255, 0.3);
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
-        }
-
-        .score-label { font-size: 12px; text-transform: uppercase; color: var(--neon-blue); letter-spacing: 1px; }
-        .score-value { font-size: 24px; font-weight: 900; }
-
-        /* Game Board */
-        .board-container {
-            position: relative;
-            background: var(--card-bg);
-            padding: 10px;
-            border-radius: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(157, 0, 255, 0.1);
-            backdrop-filter: blur(10px);
-        }
-
-        #game-board {
-            display: grid;
-            grid-template-columns: repeat(var(--grid-size), var(--cell-size));
-            grid-template-rows: repeat(var(--grid-size), var(--cell-size));
-            gap: var(--gap);
-        }
-
-        .cell {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.02);
-            transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .cell.occupied { border: none; }
-        .cell.preview { background: rgba(255, 255, 255, 0.1) !important; }
-
-        /* Shapes Dock */
-        .dock {
-            margin-top: 30px;
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            align-items: center;
-            min-height: 120px;
-        }
-
-        .dock-slot {
-            width: 100px;
-            height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 12px;
-            border: 1px dashed rgba(255, 255, 255, 0.1);
-        }
-
-        .shape {
-            cursor: grab;
-            display: grid;
-            gap: 2px;
-            transition: transform 0.2s ease;
-        }
-
-        .shape-block {
-            width: 25px;
-            height: 25px;
-            border-radius: 4px;
-            box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.3);
-        }
-
-        /* Block Colors */
-        .color-blue { background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); }
-        .color-pink { background: var(--neon-pink); box-shadow: 0 0 10px var(--neon-pink); }
-        .color-purple { background: var(--neon-purple); box-shadow: 0 0 10px var(--neon-purple); }
-        .color-green { background: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
-        .color-yellow { background: var(--neon-yellow); box-shadow: 0 0 10px var(--neon-yellow); }
-
-        /* Overlay */
-        #overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            display: none;
-        }
-
-        #overlay h2 { font-size: 48px; color: var(--neon-pink); margin-bottom: 20px; text-shadow: 0 0 20px var(--neon-pink); }
-        
-        .btn {
-            padding: 12px 40px;
-            font-size: 20px;
-            font-weight: 700;
-            background: transparent;
-            color: white;
-            border: 2px solid var(--neon-blue);
-            cursor: pointer;
-            border-radius: 99px;
-            transition: 0.3s;
-            text-transform: uppercase;
-        }
-
-        .btn:hover { background: var(--neon-blue); color: var(--bg); box-shadow: 0 0 30px var(--neon-blue); }
-
-        /* Animation */
-        @keyframes clearPop {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.1); filter: brightness(2); }
-            100% { transform: scale(0); opacity: 0; }
-        }
-        .clear-anim { animation: clearPop 0.4s forwards; }
-
-        /* Drag Style */
-        .dragging {
-            position: fixed;
-            pointer-events: none;
-            z-index: 1000;
-            transform: scale(1.2);
-            opacity: 0.9;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: radial-gradient(ellipse at center, #0d1b3e 0%, #000510 100%); overflow: hidden; height: 100vh; }
+        #canvas-container { width: 100%; height: 100%; cursor: grab; }
+        #canvas-container:active { cursor: grabbing; }
+        #hint {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            color: rgba(255,255,255,0.45); font-family: 'Segoe UI', sans-serif;
+            font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
+            pointer-events: none; user-select: none;
         }
     </style>
 </head>
 <body>
-    <div class="game-header">
-        <div class="score-box">
-            <div class="score-label">Best</div>
-            <div id="best-score" class="score-value">0</div>
-        </div>
-        <div class="score-box">
-            <div class="score-label">Score</div>
-            <div id="current-score" class="score-value">0</div>
-        </div>
-    </div>
+    <div id="canvas-container"></div>
+    <div id="hint">🖱 Drag to rotate · Scroll to zoom</div>
 
-    <div class="board-container">
-        <div id="game-board"></div>
-    </div>
-
-    <div class="dock">
-        <div class="dock-slot" data-index="0"></div>
-        <div class="dock-slot" data-index="1"></div>
-        <div class="dock-slot" data-index="2"></div>
-    </div>
-
-    <div id="overlay">
-        <h2 id="overlay-title">GAME OVER</h2>
-        <button class="btn" onclick="game.init()">New Run</button>
-    </div>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script>
-        // --- AUDIO ENGINE ---
-        class AudioEngine {
-            constructor() {
-                this.ctx = null;
-            }
-            ensureCtx() {
-                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            playClack() {
-                this.ensureCtx();
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.1);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.1);
-            }
-            playPop() {
-                this.ensureCtx();
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.2);
-                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.2);
-            }
+    // ── SCENE SETUP ──────────────────────────────────────────────────────────
+    const W = window.innerWidth, H = window.innerHeight;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(42, W/H, 0.1, 1000);
+    camera.position.set(0, 14, 38);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(W, H);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.3;
+    document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; controls.dampingFactor = 0.07;
+    controls.minDistance = 18; controls.maxDistance = 65;
+    controls.maxPolarAngle = Math.PI * 0.75;
+
+    // ── LIGHTING ─────────────────────────────────────────────────────────────
+    scene.add(new THREE.AmbientLight(0xb8d4ff, 0.65));
+
+    const keyLight = new THREE.DirectionalLight(0xfff5e0, 1.2);
+    keyLight.position.set(10, 20, 15);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.set(1024, 1024);
+    scene.add(keyLight);
+
+    const fillLight = new THREE.PointLight(0x4488ff, 1.8, 60);
+    fillLight.position.set(-12, 12, -10);
+    scene.add(fillLight);
+
+    const warmLight = new THREE.PointLight(0xffaa44, 1.2, 40);
+    warmLight.position.set(8, -2, 12);
+    scene.add(warmLight);
+
+    // ── WOOD TEXTURE ─────────────────────────────────────────────────────────
+    function makeWoodTex() {
+        const c = document.createElement('canvas'); c.width = 512; c.height = 512;
+        const ctx = c.getContext('2d');
+        const grad = ctx.createLinearGradient(0, 0, 512, 0);
+        grad.addColorStop(0,    '#4a2f1a');
+        grad.addColorStop(0.15, '#6b3d1e');
+        grad.addColorStop(0.35, '#7d4a22');
+        grad.addColorStop(0.55, '#5c3518');
+        grad.addColorStop(0.75, '#6b3d1e');
+        grad.addColorStop(1,    '#4a2f1a');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, 512, 512);
+        for(let i = 0; i < 4000; i++) {
+            const x = Math.random() * 512, y = Math.random() * 512;
+            const dark = i % 8 === 0;
+            ctx.fillStyle = dark ? 'rgba(30,15,5,0.35)' : 'rgba(120,70,25,0.18)';
+            ctx.fillRect(x, y, Math.random()*2+0.5, Math.random()*20+4);
         }
+        const t = new THREE.CanvasTexture(c);
+        t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(3, 1);
+        return t;
+    }
+    const woodTex = makeWoodTex();
+    const woodMat = new THREE.MeshStandardMaterial({ map: woodTex, roughness: 0.75, metalness: 0.05 });
 
-        const audio = new AudioEngine();
+    // ── GLOBE SHELL ──────────────────────────────────────────────────────────
+    const globeGroup = new THREE.Group();
+    scene.add(globeGroup);
 
-        // --- SHAPES DATA ---
-        const SHAPES = [
-            { id: 1, layout: [[1]], color: 'color-blue' }, // 1x1
-            { id: 2, layout: [[1,1]], color: 'color-pink' }, // 1x2
-            { id: 3, layout: [[1],[1]], color: 'color-pink' },
-            { id: 4, layout: [[1,1,1]], color: 'color-purple' }, // 1x3
-            { id: 5, layout: [[1],[1],[1]], color: 'color-purple' },
-            { id: 6, layout: [[1,1],[1,1]], color: 'color-yellow' }, // Square
-            { id: 7, layout: [[1,1,1,1]], color: 'color-green' }, // Long
-            { id: 8, layout: [[1],[1],[1],[1]], color: 'color-green' },
-            { id: 9, layout: [[1,0],[1,1]], color: 'color-blue' }, // L small
-            { id: 10, layout: [[0,1,1],[1,1,0]], color: 'color-pink' }, // Z
-            { id: 11, layout: [[1,1,1],[0,1,0]], color: 'color-purple' }, // T
-            { id: 12, layout: [[1,1,1],[1,0,0]], color: 'color-blue' }, // L
-            { id: 13, layout: [[1,1,1],[0,0,1]], color: 'color-yellow' }, // J
+    // Glass dome
+    const glassMat = new THREE.MeshPhysicalMaterial({
+        color: 0xd0f0ff,
+        transmission: 0.96, thickness: 4, ior: 1.5,
+        roughness: 0, metalness: 0.05,
+        transparent: true, opacity: 0.38,
+        reflectivity: 1, clearcoat: 1, clearcoatRoughness: 0,
+        envMapIntensity: 1.5
+    });
+    const dome = new THREE.Mesh(
+        new THREE.SphereGeometry(8, 80, 80, 0, Math.PI*2, 0, Math.PI/1.52),
+        glassMat
+    );
+    globeGroup.add(dome);
+
+    // Base ring (thin accent)
+    const ringMat = new THREE.MeshStandardMaterial({ color: 0xffe0a0, metalness: 0.9, roughness: 0.15 });
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(8.1, 0.12, 16, 64), ringMat);
+    ring.rotation.x = Math.PI/2; ring.position.y = -1.05;
+    globeGroup.add(ring);
+
+    // Base wood cylinders
+    const base1 = new THREE.Mesh(new THREE.CylinderGeometry(8.05, 8.5, 1.0, 64), woodMat);
+    base1.position.y = -1.55;
+    const base2 = new THREE.Mesh(new THREE.CylinderGeometry(8.5, 10.2, 3.2, 64), woodMat);
+    base2.position.y = -3.65;
+    const base3 = new THREE.Mesh(new THREE.CylinderGeometry(9.8, 9.0, 0.4, 64), woodMat);
+    base3.position.y = -5.45;
+    globeGroup.add(base1, base2, base3);
+
+    // Gold accent rings on base
+    const gRing1 = new THREE.Mesh(new THREE.TorusGeometry(8.5, 0.1, 8, 64), ringMat);
+    gRing1.rotation.x = Math.PI/2; gRing1.position.y = -2.2;
+    const gRing2 = gRing1.clone(); gRing2.position.y = -3.2;
+    globeGroup.add(gRing1, gRing2);
+
+    // Snow ground
+    const snowGround = new THREE.Mesh(
+        new THREE.CircleGeometry(7.85, 64),
+        new THREE.MeshStandardMaterial({ color: 0xf0f8ff, roughness: 0.9, metalness: 0, polygonOffset: true, polygonOffsetFactor: -1 })
+    );
+    snowGround.rotation.x = -Math.PI/2; snowGround.position.y = -0.98;
+    globeGroup.add(snowGround);
+
+    // ── HELPER MATERIALS ──────────────────────────────────────────────────────
+    const MAT = {
+        snow:      new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 }),
+        treeGreen: new THREE.MeshStandardMaterial({ color: 0x1a5c28, roughness: 0.9 }),
+        treeDark:  new THREE.MeshStandardMaterial({ color: 0x0f3d18, roughness: 0.9 }),
+        trunk:     new THREE.MeshStandardMaterial({ color: 0x5d3a1a, roughness: 1 }),
+        houseWall: new THREE.MeshStandardMaterial({ color: 0x5d3a1a, roughness: 0.85 }),
+        houseWall2:new THREE.MeshStandardMaterial({ color: 0x7a4f2c, roughness: 0.85 }),
+        roofRed:   new THREE.MeshStandardMaterial({ color: 0x8b1a1a, roughness: 0.7 }),
+        windowGlow:new THREE.MeshBasicMaterial({ color: 0xffee88 }),
+        windowTrim:new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 }),
+        door:      new THREE.MeshStandardMaterial({ color: 0x3d1f0a, roughness: 0.9 }),
+        santaRed:  new THREE.MeshStandardMaterial({ color: 0xcc1111, roughness: 0.7 }),
+        santaSkin: new THREE.MeshStandardMaterial({ color: 0xf5c5a3, roughness: 0.7 }),
+        santaWhite:new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 }),
+        santaBelt: new THREE.MeshBasicMaterial({ color: 0x111111 }),
+        beltBuckle:new THREE.MeshStandardMaterial({ color: 0xffcc00, metalness: 0.9, roughness: 0.1 }),
+        sackBrown: new THREE.MeshStandardMaterial({ color: 0x8b6914, roughness: 0.9 }),
+        deer:      new THREE.MeshStandardMaterial({ color: 0x7a5230, roughness: 0.85 }),
+        deerBelly: new THREE.MeshStandardMaterial({ color: 0xc49a6c, roughness: 0.85 }),
+        antler:    new THREE.MeshStandardMaterial({ color: 0x4a2e0a, roughness: 0.9 }),
+        carrot:    new THREE.MeshStandardMaterial({ color: 0xff6600, roughness: 0.7 }),
+        black:     new THREE.MeshBasicMaterial({ color: 0x111111 }),
+        rudolphNose: new THREE.MeshStandardMaterial({ color: 0xff2222, roughness: 0.3, emissive: 0x880000, emissiveIntensity: 0.5 }),
+        sleighRed: new THREE.MeshStandardMaterial({ color: 0xbb1111, roughness: 0.5, metalness: 0.2 }),
+        gold:      new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.2, metalness: 0.9 }),
+        giftRed:   new THREE.MeshBasicMaterial({ color: 0xff2222 }),
+        giftYellow:new THREE.MeshBasicMaterial({ color: 0xffdd00 }),
+        giftGreen: new THREE.MeshBasicMaterial({ color: 0x22aa44 }),
+    };
+
+    // ── 1. PINE TREES ────────────────────────────────────────────────────────
+    function makeTree(x, z, scale) {
+        const g = new THREE.Group();
+        // Trunk
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 0.7, 8), MAT.trunk);
+        trunk.position.y = 0.35; g.add(trunk);
+        // Layers (bottom to top)
+        const layers = [
+            { r: 1.55, h: 1.8, y: 0.9 },
+            { r: 1.2,  h: 1.7, y: 1.9 },
+            { r: 0.85, h: 1.6, y: 2.75 },
+            { r: 0.45, h: 1.2, y: 3.5 }
         ];
-
-        // --- GAME ENGINE ---
-        class BlockBlast {
-            constructor() {
-                this.grid = Array(8).fill(null).map(() => Array(8).fill(0));
-                this.score = 0;
-                this.bestScore = parseInt(localStorage.getItem('bestScore')) || 0;
-                this.dockedShapes = [null, null, null];
-                this.init();
+        layers.forEach((l, i) => {
+            const mat = i % 2 === 0 ? MAT.treeGreen : MAT.treeDark;
+            const cone = new THREE.Mesh(new THREE.ConeGeometry(l.r, l.h, 9), mat);
+            cone.position.y = l.y; g.add(cone);
+            // Snow on edge of each layer
+            for(let s=0; s<5; s++) {
+                const ang = (s / 5) * Math.PI * 2;
+                const snw = new THREE.Mesh(new THREE.SphereGeometry(0.13, 6, 6), MAT.snow);
+                snw.position.set(Math.cos(ang)*l.r*0.6, l.y + l.h*0.45, Math.sin(ang)*l.r*0.6);
+                g.add(snw);
             }
+        });
+        // Star on top
+        const star = new THREE.Mesh(new THREE.OctahedronGeometry(0.18), new THREE.MeshStandardMaterial({ color: 0xffee00, emissive: 0xffaa00, emissiveIntensity: 0.8, metalness: 0.5 }));
+        star.position.y = 4.4; g.add(star);
 
-            init() {
-                this.grid = Array(8).fill(null).map(() => Array(8).fill(0));
-                this.score = 0;
-                this.updateScore(0);
-                document.getElementById('overlay').style.display = 'none';
-                this.renderBoard();
-                this.refillDock();
-                document.getElementById('best-score').innerText = this.bestScore;
+        g.position.set(x, -0.98, z);
+        g.scale.setScalar(scale);
+        globeGroup.add(g);
+    }
+    makeTree(-3.8, -2.2, 0.82);
+    makeTree( 2.2, -4.0, 0.88);
+    makeTree(-0.5, -5.5, 0.72);
+
+    // ── 2. HOUSE ─────────────────────────────────────────────────────────────
+    const house = new THREE.Group();
+    // Foundation slab
+    const found = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.2, 3.0), woodMat);
+    found.position.y = 0.1; house.add(found);
+    // Walls — height 2.6, so top of wall = 0.2 + 2.6 = 2.8
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(3.0, 2.6, 2.8), MAT.houseWall);
+    wall.position.y = 1.5; house.add(wall);
+    // Front face accent
+    const wall2 = new THREE.Mesh(new THREE.BoxGeometry(3.05, 2.65, 0.12), MAT.houseWall2);
+    wall2.position.set(0, 1.5, 1.42); house.add(wall2);
+    // Roof cone — base sits exactly on top of wall (y = 2.8), height = 2.2
+    // ConeGeometry center is at midpoint so position = 2.8 + 2.2/2 = 3.9
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(2.55, 2.2, 4), MAT.roofRed);
+    roof.rotation.y = Math.PI/4; roof.position.y = 3.9; house.add(roof);
+    // Eave trim (thin ring at base of roof)
+    const eaveMat = new THREE.MeshStandardMaterial({ color: 0x6b1010, roughness: 0.6 });
+    const eave = new THREE.Mesh(new THREE.CylinderGeometry(2.58, 2.58, 0.12, 4), eaveMat);
+    eave.rotation.y = Math.PI/4; eave.position.y = 2.84; house.add(eave);
+    // Chimney
+    const chimney = new THREE.Mesh(new THREE.BoxGeometry(0.36, 1.0, 0.36), new THREE.MeshStandardMaterial({ color: 0x666666, roughness: 0.9 }));
+    chimney.position.set(0.65, 4.55, -0.4); house.add(chimney);
+    const chimneyTop = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.1, 0.45), new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.9 }));
+    chimneyTop.position.set(0.65, 5.08, -0.4); house.add(chimneyTop);
+    // Windows (on front face z=1.43)
+    function makeWindow(x, y, z) {
+        const frame = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.85), MAT.windowTrim);
+        frame.position.set(x, y, z); house.add(frame);
+        const glow = new THREE.Mesh(new THREE.PlaneGeometry(0.68, 0.64), MAT.windowGlow);
+        glow.position.set(x, y, z + 0.01); house.add(glow);
+        // Window cross
+        const crossH = new THREE.Mesh(new THREE.PlaneGeometry(0.68, 0.04), new THREE.MeshBasicMaterial({color: 0xffffff}));
+        crossH.position.set(x, y, z + 0.02); house.add(crossH);
+        const crossV = new THREE.Mesh(new THREE.PlaneGeometry(0.04, 0.64), new THREE.MeshBasicMaterial({color: 0xffffff}));
+        crossV.position.set(x, y, z + 0.02); house.add(crossV);
+    }
+    makeWindow( 0.75, 1.4, 1.43);
+    makeWindow(-0.75, 1.4, 1.43);
+    // Door
+    const doorFrame = new THREE.Mesh(new THREE.PlaneGeometry(0.72, 1.1), new THREE.MeshStandardMaterial({ color: 0xffe0b2, roughness: 0.5 }));
+    doorFrame.position.set(0, 0.75, 1.43); house.add(doorFrame);
+    const door = new THREE.Mesh(new THREE.PlaneGeometry(0.58, 0.96), MAT.door);
+    door.position.set(0, 0.75, 1.44); house.add(door);
+    const doorKnob = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 6), new THREE.MeshStandardMaterial({color: 0xffcc00, metalness: 0.9}));
+    doorKnob.position.set(0.22, 0.75, 1.46); house.add(doorKnob);
+    // Snow on roof — small puffs clinging to roof surface, NOT a flat cone
+    const roofSnowMat = new THREE.MeshStandardMaterial({ color: 0xf0f8ff, roughness: 0.9 });
+    // Snow cap on peak
+    const snowPeak = new THREE.Mesh(new THREE.SphereGeometry(0.28, 10, 10), roofSnowMat);
+    snowPeak.scale.set(1, 0.55, 1); snowPeak.position.y = 5.02; house.add(snowPeak);
+    // Snow puffs along roof edges
+    for (let i=0; i<8; i++) {
+        const ang = (i / 8) * Math.PI * 2;
+        const sr = 2.1;
+        const puff = new THREE.Mesh(new THREE.SphereGeometry(0.22 + Math.random()*0.1, 7, 7), roofSnowMat);
+        puff.scale.set(1.1, 0.55, 1.1);
+        puff.position.set(Math.cos(ang)*sr, 3.55 + Math.abs(Math.cos(ang+Math.PI/4))*0.3, Math.sin(ang)*sr);
+        house.add(puff);
+    }
+
+    house.position.set(-1.8, -0.98, -0.8);
+    globeGroup.add(house);
+
+    // ── 3. SNOWMAN ───────────────────────────────────────────────────────────
+    const snowman = new THREE.Group();
+    const smB = new THREE.Mesh(new THREE.SphereGeometry(0.75, 20, 20), MAT.snow); smB.position.y = 0.75;
+    const smM = new THREE.Mesh(new THREE.SphereGeometry(0.52, 20, 20), MAT.snow); smM.position.y = 1.72;
+    const smH = new THREE.Mesh(new THREE.SphereGeometry(0.35, 20, 20), MAT.snow); smH.position.y = 2.41;
+    // Hat
+    const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.08, 20), new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.7 }));
+    hatBrim.position.y = 2.78;
+    const hatTop = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.35, 0.55, 20), new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.7 }));
+    hatTop.position.y = 3.1;
+    const hatBand = new THREE.Mesh(new THREE.CylinderGeometry(0.305, 0.305, 0.12, 20), new THREE.MeshStandardMaterial({ color: 0xcc0000, roughness: 0.5 }));
+    hatBand.position.y = 2.9;
+    // Eyes
+    const eMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    const eye1 = new THREE.Mesh(new THREE.SphereGeometry(0.046, 8, 8), eMat); eye1.position.set(0.14,  2.52, 0.31);
+    const eye2 = eye1.clone(); eye2.position.set(-0.14, 2.52, 0.31);
+    // Mouth dots
+    const mouthGroup = new THREE.Group();
+    for(let i=0; i<5; i++) {
+        const a = (i/4) * Math.PI * 0.45 - Math.PI*0.225;
+        const d = new THREE.Mesh(new THREE.SphereGeometry(0.030, 6, 6), eMat);
+        d.position.set(Math.sin(a)*0.22, 2.38 + Math.cos(a)*0.07 - 0.08, Math.cos(a)*0.22 + 0.2);
+        mouthGroup.add(d);
+    }
+    // Carrot nose
+    const carrot = new THREE.Mesh(new THREE.ConeGeometry(0.065, 0.35, 8), MAT.carrot);
+    carrot.rotation.x = Math.PI/2; carrot.position.set(0, 2.46, 0.42);
+    // Scarf
+    const scarf = new THREE.Mesh(new THREE.TorusGeometry(0.37, 0.09, 8, 20), new THREE.MeshStandardMaterial({ color: 0xdd3333, roughness: 0.9 }));
+    scarf.position.y = 1.98; scarf.rotation.x = Math.PI/2;
+    // Stick arms
+    const armMat = new THREE.MeshStandardMaterial({ color: 0x4a2e0a, roughness: 1 });
+    const arm1 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.9, 6), armMat);
+    arm1.position.set(0.65, 1.7, 0); arm1.rotation.z = -Math.PI/4;
+    const arm2 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.9, 6), armMat);
+    arm2.position.set(-0.65, 1.7, 0); arm2.rotation.z = Math.PI/4;
+
+    snowman.add(smB, smM, smH, hatBrim, hatTop, hatBand, eye1, eye2, mouthGroup, carrot, scarf, arm1, arm2);
+    snowman.position.set(3.5, -0.98, 1.8);
+    globeGroup.add(snowman);
+
+    // ── 4. SANTA CLAUS ───────────────────────────────────────────────────────
+    const santa = new THREE.Group();
+    // Legs
+    const legMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 });
+    const legL = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.12, 0.6, 10), legMat); legL.position.set( 0.18, 0.3, 0); santa.add(legL);
+    const legR = legL.clone(); legR.position.set(-0.18, 0.3, 0); santa.add(legR);
+    // Boot
+    const bootMat = new THREE.MeshStandardMaterial({ color: 0x1a0a00, roughness: 0.9 });
+    const bootL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.18, 0.35), bootMat); bootL.position.set( 0.18, 0.04, 0.08); santa.add(bootL);
+    const bootR = bootL.clone(); bootR.position.set(-0.18, 0.04, 0.08); santa.add(bootR);
+    // Body
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.55, 18, 18), MAT.santaRed);
+    body.scale.y = 1.1; body.position.y = 0.85; santa.add(body);
+    // White fur trim
+    const trim = new THREE.Mesh(new THREE.TorusGeometry(0.56, 0.085, 8, 24), MAT.santaWhite);
+    trim.rotation.x = Math.PI/2; trim.position.y = 0.62; santa.add(trim);
+    // Belt
+    const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.56, 0.56, 0.14, 24), MAT.santaBelt);
+    belt.position.y = 0.78; santa.add(belt);
+    const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.15, 0.05), MAT.beltBuckle);
+    buckle.position.set(0, 0.78, 0.57); santa.add(buckle);
+    // Neck & Head
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.33, 16, 16), MAT.santaSkin);
+    head.position.y = 1.58; santa.add(head);
+    // Beard
+    const beard1 = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 12), MAT.santaWhite);
+    beard1.scale.set(1, 0.7, 0.8); beard1.position.set(0, 1.42, 0.15); santa.add(beard1);
+    const beard2 = new THREE.Mesh(new THREE.SphereGeometry(0.2, 10, 10), MAT.santaWhite);
+    beard2.position.set(0, 1.28, 0.22); santa.add(beard2);
+    // Moustache
+    const mustL = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), MAT.santaWhite);
+    mustL.scale.set(1.2, 0.5, 0.8); mustL.position.set( 0.1, 1.5, 0.31); santa.add(mustL);
+    const mustR = mustL.clone(); mustR.position.set(-0.1, 1.5, 0.31); santa.add(mustR);
+    // Eyes
+    const sEye1 = new THREE.Mesh(new THREE.SphereGeometry(0.035, 6, 6), new THREE.MeshBasicMaterial({color:0x331100})); sEye1.position.set( 0.12, 1.65, 0.3); santa.add(sEye1);
+    const sEye2 = sEye1.clone(); sEye2.position.set(-0.12, 1.65, 0.3); santa.add(sEye2);
+    // Hat
+    const hatB2 = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.1, 18), MAT.santaWhite); hatB2.position.y = 1.94; santa.add(hatB2);
+    const hatC = new THREE.Mesh(new THREE.ConeGeometry(0.34, 0.8, 14), MAT.santaRed); hatC.position.y = 2.36; santa.add(hatC);
+    const pom = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), MAT.santaWhite); pom.position.y = 2.78; santa.add(pom);
+    // Arm & Gift Sack
+    const armSanta = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.11, 0.55, 8), MAT.santaRed);
+    armSanta.rotation.z = Math.PI/3; armSanta.position.set(0.62, 0.95, 0); santa.add(armSanta);
+    // Sack
+    const sackGroup = new THREE.Group();
+    const sack = new THREE.Mesh(new THREE.SphereGeometry(0.42, 14, 14), MAT.sackBrown);
+    sack.scale.set(1, 1.1, 1);
+    const sackTie = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.05, 6, 12), new THREE.MeshStandardMaterial({color: 0xffdd00, roughness: 0.5}));
+    sackTie.position.y = 0.43; sackTie.rotation.x = Math.PI/2;
+    // Mini gifts peeking out
+    const gBox = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 0.18), MAT.giftRed);
+    gBox.position.set(0.1, 0.5, 0.1);
+    const gBox2 = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.14), MAT.giftGreen);
+    gBox2.position.set(-0.1, 0.48, 0.05);
+    sackGroup.add(sack, sackTie, gBox, gBox2);
+    sackGroup.position.set(-0.65, 0.9, -0.15); sackGroup.rotation.z = -Math.PI/5;
+    santa.add(sackGroup);
+
+    santa.position.set(1.6, -0.98, 2.5); santa.rotation.y = -0.6;
+    globeGroup.add(santa);
+
+    // ── 5. REINDEER (PROPER!) ─────────────────────────────────────────────────
+    const reindeer = new THREE.Group();
+    // Body
+    const rBody = new THREE.Mesh(new THREE.SphereGeometry(0.6, 14, 14), MAT.deer);
+    rBody.scale.set(1.4, 0.85, 0.75); rBody.position.set(0, 0.8, 0); reindeer.add(rBody);
+    // Belly patch
+    const belly = new THREE.Mesh(new THREE.SphereGeometry(0.38, 10, 10), MAT.deerBelly);
+    belly.scale.set(1.1, 0.7, 0.55); belly.position.set(0, 0.7, 0.18); reindeer.add(belly);
+    // Neck
+    const rNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.65, 10), MAT.deer);
+    rNeck.rotation.z = -Math.PI/4; rNeck.position.set(0.55, 1.1, 0); reindeer.add(rNeck);
+    // Head
+    const rHead = new THREE.Mesh(new THREE.SphereGeometry(0.27, 12, 12), MAT.deer);
+    rHead.scale.set(1.3, 1.0, 1.0); rHead.position.set(0.95, 1.45, 0); reindeer.add(rHead);
+    // Snout
+    const snout = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 10), MAT.deerBelly);
+    snout.scale.set(1.1, 0.8, 1.0); snout.position.set(1.22, 1.38, 0); reindeer.add(snout);
+    // Rudolph NOSE glowing red
+    const rNose = new THREE.Mesh(new THREE.SphereGeometry(0.075, 10, 10), MAT.rudolphNose);
+    rNose.position.set(1.38, 1.38, 0); reindeer.add(rNose);
+    // Nose light
+    const noseGlow = new THREE.PointLight(0xff3333, 0.8, 1.5);
+    noseGlow.position.set(1.38, 1.38, 0); reindeer.add(noseGlow);
+    // Eyes
+    const rEye1 = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), new THREE.MeshBasicMaterial({color:0x111111}));
+    rEye1.position.set(1.18, 1.55, 0.15); reindeer.add(rEye1);
+    const rEye2 = rEye1.clone(); rEye2.position.z = -0.15; reindeer.add(rEye2);
+    // Ears
+    const rEar1 = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.22, 6), MAT.deer);
+    rEar1.rotation.z = -Math.PI/5; rEar1.position.set(0.92, 1.75, 0.18); reindeer.add(rEar1);
+    const rEar2 = rEar1.clone(); rEar2.position.z = -0.18; reindeer.add(rEar2);
+    // ANTLERS
+    function makeAntler(side) {
+        const a = new THREE.Group();
+        const antMesh = (rx, ry, rz, px, py, pz, l) => {
+            const m = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.035, l, 6), MAT.antler);
+            m.rotation.set(rx, ry, rz); m.position.set(px, py, pz); a.add(m);
+        };
+        antMesh(0, 0, -Math.PI/8,     0,      0.28,   0,    0.55); // main stalk
+        antMesh(0, 0, -Math.PI/2.5,   0.12,   0.52,   side*0.04, 0.3); // front branch
+        antMesh(0, 0,  Math.PI/3,    -0.1,    0.46,   0,    0.28); // back branch
+        antMesh(0, 0, -Math.PI/2.8,   0.2,    0.66,   side*0.02, 0.22); // tip branch
+        a.position.set(0.88, 1.68, side * 0.18);
+        return a;
+    }
+    reindeer.add(makeAntler(1), makeAntler(-1));
+    // 4 Legs
+    const legPos = [[0.3, 0.55], [0.3, -0.55], [-0.3, 0.55], [-0.3, -0.55]];
+    const hoofMat = new THREE.MeshStandardMaterial({color: 0x2a1a00, roughness: 1});
+    legPos.forEach(([lx, lz]) => {
+        const legUpper = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.065, 0.55, 8), MAT.deer);
+        legUpper.position.set(lx, 0.28, lz); reindeer.add(legUpper);
+        const legLower = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.045, 0.48, 8), MAT.deer);
+        legLower.position.set(lx, -0.07, lz); reindeer.add(legLower);
+        const hoof = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), hoofMat);
+        hoof.position.set(lx, -0.3, lz); reindeer.add(hoof);
+    });
+    // Tail
+    const tail = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), MAT.snow);
+    tail.position.set(-0.75, 0.95, 0); reindeer.add(tail);
+
+    // Place reindeer — moved further away from house
+    reindeer.position.set(-4.5, -0.98, 3.5);
+    reindeer.rotation.y = Math.PI * 0.15;
+    globeGroup.add(reindeer);
+
+    // ── 6. SLEIGH ─────────────────────────────────────────────────────────────
+    const sleigh = new THREE.Group();
+    const slBody = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.7, 1.1), MAT.sleighRed);
+    slBody.position.y = 0.2; sleigh.add(slBody);
+    // Seat back
+    const seatBack = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.8, 0.12), MAT.sleighRed);
+    seatBack.position.set(0, 0.6, -0.55); sleigh.add(seatBack);
+    // Gold trim on sleigh
+    const slTrimF = new THREE.Mesh(new THREE.BoxGeometry(1.82, 0.08, 0.08), MAT.gold);
+    slTrimF.position.set(0, 0.57, 0.55); sleigh.add(slTrimF);
+    // Runners
+    [-0.45, 0.45].forEach(z => {
+        const runner = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.06, 0.08), MAT.gold);
+        runner.position.set(0, -0.2, z); sleigh.add(runner);
+        const curl = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.04, 6, 10, Math.PI), MAT.gold);
+        curl.rotation.x = Math.PI/2; curl.rotation.z = Math.PI/2;
+        curl.position.set(1.0, -0.05, z); sleigh.add(curl);
+    });
+    // Gifts on sleigh
+    [
+        {color: 0xff2222, pos: [0, 0.6, 0], sz: [0.4, 0.4, 0.4]},
+        {color: 0x2299ff, pos: [-0.5, 0.6, 0.1], sz: [0.3, 0.5, 0.3]},
+        {color: 0x22cc44, pos: [0.45, 0.65, -0.1], sz: [0.35, 0.45, 0.35]},
+    ].forEach(({color, pos, sz}) => {
+        const gift = new THREE.Mesh(new THREE.BoxGeometry(...sz), new THREE.MeshStandardMaterial({color, roughness: 0.6}));
+        gift.position.set(...pos); sleigh.add(gift);
+        const ribbon1 = new THREE.Mesh(new THREE.BoxGeometry(sz[0]+0.01, sz[1]+0.01, 0.05), new THREE.MeshBasicMaterial({color: 0xffdd00}));
+        ribbon1.position.set(...pos); sleigh.add(ribbon1);
+    });
+
+    sleigh.position.set(-4.8, -0.98, 1.5);
+    sleigh.rotation.y = Math.PI * 0.12;
+    globeGroup.add(sleigh);
+
+    // ── SNOW PARTICLES ────────────────────────────────────────────────────────
+    function makeSnow(count, range, size, isInner) {
+        const geo = new THREE.BufferGeometry();
+        const pos = new Float32Array(count * 3); const vel = [];
+        for(let i=0; i<count; i++) {
+            const i3 = i*3;
+            if(isInner) {
+                const r = Math.random()*7.4, t = Math.random()*Math.PI*2, p = Math.random()*Math.PI;
+                pos[i3]   = r * Math.sin(p) * Math.cos(t);
+                pos[i3+1] = r * Math.sin(p) * Math.sin(t) + 1.5;
+                pos[i3+2] = r * Math.cos(p);
+            } else {
+                pos[i3]   = (Math.random()-0.5)*range;
+                pos[i3+1] = Math.random()*range - range*0.5;
+                pos[i3+2] = (Math.random()-0.5)*range;
             }
+            vel.push(0.008 + Math.random()*0.038);
+        }
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        const pts = new THREE.Points(geo, new THREE.PointsMaterial({
+            color: 0xffffff, size, transparent: true, opacity: 0.85, depthWrite: false, sizeAttenuation: true
+        }));
+        return { pts, vel };
+    }
+    const iSnow = makeSnow(2200, 15, 0.11, true);
+    const oSnow = makeSnow(7000, 280, 0.14, false);
+    globeGroup.add(iSnow.pts); scene.add(oSnow.pts);
 
-            renderBoard() {
-                const boardEl = document.getElementById('game-board');
-                boardEl.innerHTML = '';
-                for (let r = 0; r < 8; r++) {
-                    for (let c = 0; c < 8; c++) {
-                        const cell = document.createElement('div');
-                        cell.className = 'cell' + (this.grid[r][c] ? ' occupied ' + this.grid[r][c] : '');
-                        cell.dataset.row = r;
-                        cell.dataset.col = c;
-                        boardEl.appendChild(cell);
-                    }
-                }
-            }
+    // ── ANIMATION LOOP ────────────────────────────────────────────────────────
+    let tick = 0;
+    function animate() {
+        requestAnimationFrame(animate);
+        tick += 0.012;
+        controls.update();
 
-            refillDock() {
-                if (this.dockedShapes.every(s => s === null)) {
-                    for (let i = 0; i < 3; i++) {
-                        const randomShape = {...SHAPES[Math.floor(Math.random() * SHAPES.length)]};
-                        this.dockedShapes[i] = randomShape;
-                        this.renderShapeInDock(i, randomShape);
-                    }
-                    this.checkEndGame();
-                }
-            }
+        // Gentle globe bob
+        globeGroup.position.y = Math.sin(tick * 0.6) * 0.08;
 
-            renderShapeInDock(index, shape) {
-                const slot = document.querySelector(`.dock-slot[data-index="${index}"]`);
-                slot.innerHTML = '';
-                if (!shape) return;
-
-                const shapeEl = document.createElement('div');
-                shapeEl.className = 'shape';
-                shapeEl.style.gridTemplateColumns = `repeat(${shape.layout[0].length}, 25px)`;
-                
-                shape.layout.forEach((row, r) => {
-                    row.forEach((v, c) => {
-                        const block = document.createElement('div');
-                        if (v) {
-                            block.className = `shape-block ${shape.color}`;
-                        }
-                        shapeEl.appendChild(block);
-                    });
-                });
-
-                shapeEl.onpointerdown = (e) => this.handleDragStart(e, index, shape);
-                slot.appendChild(shapeEl);
-            }
-
-            handleDragStart(e, index, shape) {
-                audio.ensureCtx();
-                const shapeEl = e.currentTarget;
-                const rect = shapeEl.getBoundingClientRect();
-                const shiftX = e.clientX - rect.left;
-                const shiftY = e.clientY - rect.top;
-
-                const clone = shapeEl.cloneNode(true);
-                clone.classList.add('dragging');
-                clone.style.width = rect.width + 'px';
-                clone.style.height = rect.height + 'px';
-                clone.style.gridTemplateColumns = shapeEl.style.gridTemplateColumns;
-                document.body.appendChild(clone);
-
-                shapeEl.style.visibility = 'hidden';
-
-                const moveAt = (pageX, pageY) => {
-                    clone.style.left = pageX - shiftX + 'px';
-                    clone.style.top = pageY - shiftY + 'px';
-                    this.showPreview(pageX - shiftX + 20, pageY - shiftY + 20, shape);
-                };
-
-                const onPointerMove = (ev) => moveAt(ev.pageX, ev.pageY);
-                document.addEventListener('pointermove', onPointerMove);
-
-                clone.onpointerup = () => {
-                    document.removeEventListener('pointermove', onPointerMove);
-                    document.body.removeChild(clone);
-                    
-                    const dropTarget = this.getDropTarget(parseInt(clone.style.left) + 20, parseInt(clone.style.top) + 20);
-                    if (dropTarget && this.canPlace(dropTarget.r, dropTarget.c, shape)) {
-                        this.placeShape(dropTarget.r, dropTarget.c, shape, index);
-                        audio.playClack();
-                    } else {
-                        shapeEl.style.visibility = 'visible';
-                    }
-                    this.clearPreview();
-                    clone.onpointerup = null;
-                };
-            }
-
-            getDropTarget(x, y) {
-                const board = document.getElementById('game-board').getBoundingClientRect();
-                if (x < board.left || x > board.right || y < board.top || y > board.bottom) return null;
-                
-                const r = Math.floor((y - board.top) / (board.height / 8));
-                const c = Math.floor((x - board.left) / (board.width / 8));
-                return { r, c };
-            }
-
-            canPlace(row, col, shape) {
-                for (let r = 0; r < shape.layout.length; r++) {
-                    for (let c = 0; c < shape.layout[r].length; c++) {
-                        if (shape.layout[r][c]) {
-                            const targetR = row + r;
-                            const targetC = col + c;
-                            if (targetR >= 8 || targetC >= 8 || this.grid[targetR][targetC] !== 0) return false;
-                        }
-                    }
-                }
-                return true;
-            }
-
-            showPreview(x, y, shape) {
-                this.clearPreview();
-                const target = this.getDropTarget(x, y);
-                if (target && this.canPlace(target.r, target.c, shape)) {
-                    for (let r = 0; r < shape.layout.length; r++) {
-                        for (let c = 0; c < shape.layout[r].length; c++) {
-                            if (shape.layout[r][c]) {
-                                const cell = document.querySelector(`.cell[data-row="${target.r + r}"][data-col="${target.c + c}"]`);
-                                if (cell) cell.classList.add('preview');
-                            }
-                        }
-                    }
-                }
-            }
-
-            clearPreview() {
-                document.querySelectorAll('.cell.preview').forEach(c => c.classList.remove('preview'));
-            }
-
-            placeShape(row, col, shape, dockIndex) {
-                let blocksPlaced = 0;
-                for (let r = 0; r < shape.layout.length; r++) {
-                    for (let c = 0; c < shape.layout[r].length; c++) {
-                        if (shape.layout[r][c]) {
-                            this.grid[row + r][col + c] = shape.color;
-                            blocksPlaced++;
-                        }
-                    }
-                }
-                this.dockedShapes[dockIndex] = null;
-                this.updateScore(this.score + blocksPlaced);
-                this.renderBoard();
-                this.checkLines();
-                this.refillDock();
-                this.checkEndGame();
-            }
-
-            checkLines() {
-                const rowsToClear = [];
-                const colsToClear = [];
-
-                for (let i = 0; i < 8; i++) {
-                    if (this.grid[i].every(cell => cell !== 0)) rowsToClear.push(i);
-                    let columnFull = true;
-                    for (let j = 0; j < 8; j++) {
-                        if (this.grid[j][i] === 0) { columnFull = false; break; }
-                    }
-                    if (columnFull) colsToClear.push(i);
-                }
-
-                if (rowsToClear.length > 0 || colsToClear.length > 0) {
-                    audio.playPop();
-                    const totalLines = rowsToClear.length + colsToClear.length;
-                    this.updateScore(this.score + (totalLines * 10) + (totalLines > 1 ? totalLines * 5 : 0));
-
-                    rowsToClear.forEach(r => {
-                        for (let c = 0; c < 8; c++) this.animateClear(r, c);
-                    });
-                    colsToClear.forEach(c => {
-                        for (let r = 0; r < 8; r++) this.animateClear(r, c);
-                    });
-
-                    setTimeout(() => {
-                        rowsToClear.forEach(r => {
-                            for (let c = 0; c < 8; c++) this.grid[r][c] = 0;
-                        });
-                        colsToClear.forEach(c => {
-                            for (let r = 0; r < 8; r++) this.grid[r][c] = 0;
-                        });
-                        this.renderBoard();
-                        this.checkEndGame();
-                    }, 400);
-                }
-            }
-
-            animateClear(r, c) {
-                const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
-                if (cell) cell.classList.add('clear-anim');
-            }
-
-            updateScore(newScore) {
-                this.score = newScore;
-                document.getElementById('current-score').innerText = this.score;
-                if (this.score > this.bestScore) {
-                    this.bestScore = this.score;
-                    document.getElementById('best-score').innerText = this.bestScore;
-                    localStorage.setItem('bestScore', this.bestScore);
-                }
-            }
-
-            checkEndGame() {
-                const hasMove = this.dockedShapes.some(shape => {
-                    if (!shape) return false;
-                    for (let r = 0; r < 8; r++) {
-                        for (let c = 0; c < 8; c++) {
-                            if (this.canPlace(r, c, shape)) return true;
-                        }
-                    }
-                    return false;
-                });
-
-                if (!hasMove && this.dockedShapes.some(s => s !== null)) {
-                    setTimeout(() => {
-                        document.getElementById('overlay-title').innerText = "GAME OVER";
-                        document.getElementById('overlay').style.display = 'flex';
-                    }, 600);
-                }
+        // Inner snow
+        const ip = iSnow.pts.geometry.attributes.position.array;
+        for(let i=0; i<2200; i++) {
+            const i3=i*3; ip[i3+1] -= iSnow.vel[i];
+            if(ip[i3+1] < -0.9 || Math.hypot(ip[i3], ip[i3+1], ip[i3+2]) > 7.8) {
+                ip[i3+1] = 5.5 + Math.random()*1.5;
+                ip[i3]   = (Math.random()-0.5)*10;
+                ip[i3+2] = (Math.random()-0.5)*10;
             }
         }
+        iSnow.pts.geometry.attributes.position.needsUpdate = true;
 
-        const game = new BlockBlast();
+        // Outer snow
+        const op = oSnow.pts.geometry.attributes.position.array;
+        for(let i=0; i<7000; i++) {
+            const i3=i*3; op[i3+1] -= oSnow.vel[i]*3;
+            if(op[i3+1] < -140) op[i3+1] = 140;
+        }
+        oSnow.pts.geometry.attributes.position.needsUpdate = true;
+
+        // Firelight flicker
+        warmLight.intensity = 1.1 + Math.sin(tick*5)*0.12 + Math.random()*0.05;
+
+        renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+        const w = window.innerWidth, h = window.innerHeight;
+        camera.aspect = w/h; camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+    });
     </script>
 </body>
 </html>
-
